@@ -1,16 +1,20 @@
 import React, { useContext, useState, useEffect } from "react"
 import { EntryContext } from "./EntryProvider"
 import { MoodContext } from "./mood/MoodProvider"
+import { TagContext } from "./tag/TagProvider"
 
 
 export const EntryForm = (props) => {
     const { addEntry, updateEntry, entry, setEntry } = useContext(EntryContext)
     const { moods, getMoods } = useContext(MoodContext)
+    const {tags, getTags } = useContext(TagContext)
 
     const [editMode, editModeChanged] = useState(false)
+    const [entryTags, setEntryTags] = useState([])
 
     useEffect(() => {
         getMoods()
+        getTags()
     }, [])
 
     useEffect(() => {
@@ -40,16 +44,17 @@ export const EntryForm = (props) => {
             updateEntry({
                 id: entry.id,
                 concept: entry.concept,
-                entry: entry.entry,
+                journal_entry: entry.entry,
                 date: entry.date,
-                moodId: parseInt(entry.moodId)
+                mood_id: parseInt(entry.moodId)
             })
         } else {
             addEntry({
                 concept: entry.concept,
-                entry: entry.entry,
-                date: Date.now(),
-                moodId: parseInt(entry.moodId)
+                journal_entry: entry.entry,
+                date: new Date().toLocaleDateString(),
+                mood_id: parseInt(entry.moodId),
+                tags: entryTags
             })
         }
         setEntry({ concept: "", entry: "", moodId: 0 })
@@ -97,6 +102,26 @@ export const EntryForm = (props) => {
                     </select>
                 </div>
             </fieldset>
+            <fieldset>
+          <div className="center posts  blueText">
+              {tags.map(tag => (
+                <>
+                <input type="checkbox" key={tag.id} value={tag.id} onClick={event => {
+                  const copyEntryTags = [...entryTags]
+                  const idPosition = copyEntryTags.indexOf(tag)
+                  if (idPosition >= 0) {
+                    copyEntryTags.splice(idPosition, 1)
+                  }
+                  else {
+                    copyEntryTags.push(tag)
+                  }
+                  setEntryTags(copyEntryTags)
+                }}/>
+                <div>{tag.name}</div>
+                </>
+              ))}
+          </div>
+        </fieldset>
             <button type="submit"
                 onClick={evt => {
                     evt.preventDefault()
